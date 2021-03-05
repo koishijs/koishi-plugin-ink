@@ -20,5 +20,11 @@
   "homepage": "https://github.com/idlist/koishi-plugin-ink#readme",
   "dependencies": {
     "inkjs": "^1.11.0"
+  },
+  "peerDependencies": {
+    "koishi-core": "^3.0.0"
+  },
+  "devDependencies": {
+    "koishi-plugin-mysql": "^3.0.0-beta.16"
   }
 }

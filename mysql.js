@@ -1,4 +1,4 @@
-const { extendDatabase } = require('koishi')
+const { extendDatabase } = require('koishi-core')
 
 extendDatabase('koishi-plugin-mysql', ({ Domain, tables }) => {
   tables.gamedata = Object.assign([

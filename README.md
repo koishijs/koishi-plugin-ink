@@ -1,2 +1,3 @@
 # koishi-plugin-ink
-An ink implementation for Koishi.js
+
+这是一个

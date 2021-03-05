@@ -1,16 +1,29 @@
 const { Story } = require('inkjs')
-const { find } = require('lodash')
 require('./mysql')
 
-let storyJson = require('./data/intercept.ink.json')
+const find = (arr, pred) => {
+  let res
+  arr.forEach(item => pred(item) ? res = item : 0)
+  return res
+}
 
 let storyLock = []
 
-module.exports = ctx => {
-  ctx.command('ink <choice>', 'inkjs测试')
-    .usage('[inkjs] 测试小说：The intercept')
-    .example('ink  查看当前剧情 / 选项')
-    .example('ink 1  选择第一个选项')
+module.exports.name = 'ink'
+
+module.exports.apply = (ctx, pluginOptions) => {
+  let pOptions = {
+    command: 'ink',
+    desc: 'inkjs功能',
+    filePath: './examples/intercept.ink.json',
+    ...pluginOptions
+  }
+
+  const storyJson = require(pOptions.filePath)
+
+  ctx.command(`${pOptions.command} <choice>`, pOptions.desc)
+    .example(`${pOptions.command}  查看当前剧情 / 选项`)
+    .example(`${pOptions.command} 1  选择第一个选项`)
     .option('hard-reset', '-R 重置（请谨慎使用）')
     .userFields(['id'])
     .action(async ({ session, options }, choice) => {
