@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-ink",
   "version": "0.0.1",
-  "description": "An ink implementation for Koishi.js",
+  "description": "An inkjs application for Koishi.js",
   "main": "index.js",
   "scripts": {
     "test": "node test/index.js"

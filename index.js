@@ -17,12 +17,10 @@ t.set('ink.error', '出现了一点错误，请尝试重新开始剧情。')
 class PluginOptions {
   constructor(pOptions) {
     this.command = 'ink'
-    this.desc = t('ink.description')
     this.filePath = './examples/intercept.ink.json'
 
     if (pOptions) {
       if (pOptions.command) this.command = pOptions.command
-      if (pOptions.desc) this.desc = pOptions.desc
       if (pOptions.filePath) this.filePath = './../../' + pOptions.filePath
     }
 
@@ -40,7 +38,6 @@ const find = (arr, pred) => {
 
 let storyLock = []
 
-
 module.exports.name = 'ink'
 
 module.exports.apply = (ctx, pluginOptions) => {
@@ -48,7 +45,7 @@ module.exports.apply = (ctx, pluginOptions) => {
 
   const storyJson = require(pOptions.filePath)
 
-  ctx.command(`${pOptions.command} <choice>`, pOptions.desc)
+  ctx.command(`${pOptions.command} <choice>`, t('ink.description'))
     .example(`${pOptions.subcommand}  ${t('ink.example')}`)
     .example(`${pOptions.subcommand} 1  ${t('ink.example-choice')}`)
     .option('hard-reset', `-R ${t('ink.hard-reset')}`)
