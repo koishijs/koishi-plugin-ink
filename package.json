@@ -1,0 +1,24 @@
+{
+  "name": "koishi-plugin-ink",
+  "version": "0.0.1",
+  "description": "An ink implementation for Koishi.js",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/idlist/koishi-plugin-ink.git"
+  },
+  "keywords": [
+    "koishi",
+    "koishi.js"
+  ],
+  "author": "i'DLisT",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/idlist/koishi-plugin-ink/issues"
+  },
+  "homepage": "https://github.com/idlist/koishi-plugin-ink#readme",
+  "dependencies": {
+    "inkjs": "^1.11.0"
+  }
+}
