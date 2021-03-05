@@ -1,5 +1,36 @@
 const { Story } = require('inkjs')
+const { t } = require('koishi-utils')
 require('./mysql')
+
+t.set('ink.description', 'ink功能')
+t.set('ink.example', '查看当前剧情 / 选项')
+t.set('ink.example-choice', '选择第一个选项')
+t.set('ink.hard-reset', '重置（请谨慎使用）')
+t.set('ink.is-locking', ' 正处于剧情中，请等待其剧情结束。')
+t.set('ink.hard-reset-confirm',
+  '这将重置你的所有进度与数据，且不可挽回。请于5秒内回复 是 或 y(es) 以确认。')
+t.set('ink.hard-reset-complete', '已重置。')
+t.set('ink.choices', '选项：')
+t.set('ink.the-end', '=== 故事结束 ===')
+t.set('ink.error', '出现了一点错误，请尝试重新开始剧情。')
+
+class PluginOptions {
+  constructor(pOptions) {
+    this.command = 'ink'
+    this.desc = t('ink.description')
+    this.filePath = './examples/intercept.ink.json'
+
+    if (pOptions) {
+      if (pOptions.command) this.command = pOptions.command
+      if (pOptions.desc) this.desc = pOptions.desc
+      if (pOptions.filePath) this.filePath = './../../' + pOptions.filePath
+    }
+
+    let subcommand = pOptions.command.match(/\/([^/]+?)$/g)
+    if (subcommand) this.subcommand = subcommand[0]
+    else this.subcommand = pOptions.command
+  }
+}
 
 const find = (arr, pred) => {
   let res
@@ -9,22 +40,18 @@ const find = (arr, pred) => {
 
 let storyLock = []
 
+
 module.exports.name = 'ink'
 
 module.exports.apply = (ctx, pluginOptions) => {
-  let pOptions = {
-    command: 'ink',
-    desc: 'inkjs功能',
-    filePath: './examples/intercept.ink.json',
-    ...pluginOptions
-  }
+  let pOptions = new PluginOptions(pluginOptions)
 
   const storyJson = require(pOptions.filePath)
 
   ctx.command(`${pOptions.command} <choice>`, pOptions.desc)
-    .example(`${pOptions.command}  查看当前剧情 / 选项`)
-    .example(`${pOptions.command} 1  选择第一个选项`)
-    .option('hard-reset', '-R 重置（请谨慎使用）')
+    .example(`${pOptions.subcommand}  ${t('ink.example')}`)
+    .example(`${pOptions.subcommand} 1  ${t('ink.example-choice')}`)
+    .option('hard-reset', `-R ${t('ink.hard-reset')}`)
     .userFields(['id'])
     .action(async ({ session, options }, choice) => {
       try {
@@ -43,18 +70,17 @@ module.exports.apply = (ctx, pluginOptions) => {
         } else if (ch.lock && ch.uid != session.user.id) {
           let currentUser = await bot.getGroupMember(session.channelId, ch.id)
           let name = currentUser.nickname || currentUser.username
-          return `${name} 正处于剧情中，请等待其剧情结束。`
+          return name + t('is-locking')
         } else {
           ch.lock = true
-          ch.ud = session.userId
+          ch.id = session.userId
           ch.uid = session.user.id
         }
 
         let story = new Story(storyJson)
 
         if (options && options['hard-reset']) {
-          session.send('这将重置你的所有数据与进度，且不可挽回。'
-            + '请于5秒内回复 是 或 y(es) 以确认。')
+          session.send(t('ink.hard-reset-confirm'))
           let ans = await session.prompt(5 * 1000)
           switch (ans) {
           case '是':
@@ -63,7 +89,7 @@ module.exports.apply = (ctx, pluginOptions) => {
             story.ResetState()
             db.saveGameData(session.user.id, story.state.toJson())
             ch.lock = false
-            return '已重置。'
+            return t('ink.hard-reset-complete')
           default:
             ch.lock = false
             return
@@ -86,20 +112,20 @@ module.exports.apply = (ctx, pluginOptions) => {
         }
 
         if (story.currentChoices.length > 0) {
-          let choices = '选项：'
+          let choices = t('ink.choices')
           for (let i = 0; i < story.currentChoices.length; i++) {
             choices += `\n${(i + 1)}. ${story.currentChoices[i].text}`
           }
           await session.sendQueued(choices)
         } else {
-          await session.sendQueued('THE END')
+          await session.sendQueued(t('ink.the-end'))
         }
 
         db.saveGameData(session.user.id, story.state.toJson())
         ch.lock = false
       } catch (err) {
         console.log(err)
-        return '出现了一点错误，请尝试重新开始剧情。'
+        return t('ink.error')
       }
     })
 }
