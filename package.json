@@ -21,12 +21,12 @@
   },
   "homepage": "https://github.com/idlist/koishi-plugin-ink#readme",
   "dependencies": {
-    "inkjs": "^1.11.0"
+    "inkjs": "^1.11.0",
+    "koishi-utils": "^4.0.1"
   },
   "devDependencies": {
     "koishi-adapter-onebot": "^3.0.0",
     "koishi-core": "^3.0.0",
-    "koishi-plugin-mysql": "^3.0.0-beta.16",
-    "koishi-utils": "^4.0.1"
+    "koishi-plugin-mysql": "^3.0.0-beta.16"
   }
 }
