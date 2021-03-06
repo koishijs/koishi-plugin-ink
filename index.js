@@ -57,7 +57,7 @@ module.exports.apply = (ctx, pluginOptions) => {
 
   ctx.command(command + ' <choice>', t(`${command}.description`))
     .example(pOptions.subcommand + '  ' + t(`${command}.example`))
-    .example(pOptions.subcommand + '1  ' + t(`${command}.example-choice`))
+    .example(pOptions.subcommand + ' 1  ' + t(`${command}.example-choice`))
     .option('hard-reset', '-R ' + t(`${command}.hard-reset`))
     .option('skip', '-s ' + t(`${command}.skip`))
     .userFields(['id'])
