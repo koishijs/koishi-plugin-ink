@@ -24,9 +24,10 @@
 这个插件是 [inkjs](https://github.com/y-lohse/inkjs) 在 [Koishi](https://github.com/koishijs/koishi) 中的简易应用，实现了以下的基本功能：
 
 - 故事的进行
+- 跳转至下一个选项
 - 在调用指令时自动读档，在选项处自动存档
 - 硬重置
-- 进程锁，在同一个频道中最多1人进行故事。
+- 进程锁，在同一个频道中最多1人进行故事
 
 ## 安装方法
 
@@ -52,6 +53,8 @@ module.exports = {
 app.plugin(require('koishi-plugin-ink'))
 ```
 
+在注册插件后，插件将自动在数据库中创建名为 **ink_save** 的表，存档将储存到此表中。
+
 ## 使用方法
 
 ```
@@ -60,9 +63,10 @@ ink <choice>
 
 **choice**：在有选项的时候，选择此选项。
 
-| 可选选项           | 说明         |
-| ------------------ | ------------ |
-| `-R, --hard-reset` | 重置所有进度 |
+| 可选选项           | 说明             |
+| ------------------ | ---------------- |
+| `-R, --hard-reset` | 重置所有进度     |
+| `-s, --skip`       | 跳转至下一个选项 |
 
 ## 插件配置项
 
@@ -70,28 +74,50 @@ ink <choice>
 
 | 配置项           | 默认值  | 说明                                                         |
 | ---------------- | ------- | ------------------------------------------------------------ |
-| `command`        | `ink`       | 插件指令                                     |
-| `filePath`     | *The intercept*   | `(.ink).json` 文件的相对路径 |
+| `command`        | `ink`       | 插件指令 **\*1**                             |
+| `filePath`     | *The intercept*   | 编译好的 `(.ink).json` 文件的相对路径 |
+
+**\*1** 修改此配置项将将使上文中所有的 `ink` 替换为所配置的字符串。例如，配置 `command: 'sample'`  会导致指令变为 `sample` ，创建的表变为 `sample_save` ，注册的模板（后述）变为 `sample.description` 、 `sample.example` 等。
+
+此配置项也支持设置为 Koishi 的链式子指令，但是请注意，由于使用了数据库，子指令的最后一项只能为层级式，且不能包含数据库表名不支持的字符。
+
+例如，配置 `command: 'lorem/ipsum'` 会创建表 `ipsum_save` ，这是没有问题的；但是配置 `command: 'lorem.ipsum'` 则会出现在 `lorem` 库内创建 `ipsum_save` 表的情况，这在大多数情况下是不被期望的。
 
 ## 模板
 
-这个插件在最初的几行定义了一些 [模板](https://koishi.js.org/api/utils.html#模板操作) ：
+这个插件在最初的几行定义了一些字符串：
 
-```
-t.set('ink.description', 'ink功能')
-t.set('ink.example', '查看当前剧情 / 选项')
-t.set('ink.example-choice', '选择第一个选项')
-t.set('ink.hard-reset', '重置（请谨慎使用）')
-t.set('ink.is-locking', ' 正处于剧情中，请等待其剧情结束。')
-t.set('ink.hard-reset-confirm',
-  '这将重置你的所有进度与数据，且不可挽回。请于5秒内回复 是 或 y(es) 以确认。')
-t.set('ink.hard-reset-complete', '已重置。')
-t.set('ink.choices', '选项：')
-t.set('ink.the-end', '=== 故事结束 ===')
-t.set('ink.error', '出现了一点错误，请尝试重新开始剧情。')
+```js
+// Object templateNode
+'description': 'ink功能',
+'example': '查看当前剧情 / 选项',
+'example-choice': '选择第一个选项',
+'hard-reset': '重置（请谨慎使用）',
+'skip': '跳至下一个选项',
+'is-locking': ' 正处于剧情中，请等待其剧情结束。',
+'is-locking-self': '当前处于剧情中，请等待剧情结束。',
+'hard-reset-confirm': '这将重置你的所有进度与数据，且不可挽回。请于5秒内回复 是 或 y(es) 以确认。',
+'hard-reset-complete': '已重置。',
+'choices': '选项：',
+'skip-to-choices': '已跳转至选项：',
+'the-end': '=== 故事结束 ===',
+'error': '出现了一点错误，请尝试重新开始剧情。'
 ```
 
-你可以根据自己的喜好来覆盖它们。
+并通过下面的方法注册为 [模板](https://koishi.js.org/api/utils.html#模板操作)  ：
+
+```js
+for (let node in templateNode) {
+  t.set(`${command}.${node}`, templateNode[node])
+  // command 即为配置项中的 command，默认为 ink
+}
+```
+
+你可以根据自己的喜好来覆盖它们，例如：
+
+```js
+t.set('ink.error', '出了亿点点错误。')
+```
 
 ## 推荐阅读
 

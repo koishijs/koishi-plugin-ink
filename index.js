@@ -46,20 +46,20 @@ module.exports.name = 'ink'
 
 module.exports.apply = (ctx, pluginOptions) => {
   let pOptions = new PluginOptions(pluginOptions)
-  let pCommand = pOptions.command
+  let command = pOptions.command
   extendMysql(pOptions.subcommand)
 
   for (let node in templateNode) {
-    t.set(`${pCommand}.${node}`, templateNode[node])
+    t.set(`${command}.${node}`, templateNode[node])
   }
 
   const storyJson = require(pOptions.filePath)
 
-  ctx.command(pCommand + ' <choice>', t(`${pCommand}.description`))
-    .example(pOptions.subcommand + '  ' + t(`${pCommand}.example`))
-    .example(pOptions.subcommand + '1  ' + t(`${pCommand}.example-choice`))
-    .option('hard-reset', '-R ' + t(`${pCommand}.hard-reset`))
-    .option('skip', '-s ' + t(`${pCommand}.skip`))
+  ctx.command(command + ' <choice>', t(`${command}.description`))
+    .example(pOptions.subcommand + '  ' + t(`${command}.example`))
+    .example(pOptions.subcommand + '1  ' + t(`${command}.example-choice`))
+    .option('hard-reset', '-R ' + t(`${command}.hard-reset`))
+    .option('skip', '-s ' + t(`${command}.skip`))
     .userFields(['id'])
     .action(async ({ session, options }, choice) => {
       try {
@@ -78,12 +78,12 @@ module.exports.apply = (ctx, pluginOptions) => {
         } else if (ch.lock && ch.uid != session.user.id) {
           let currentUser = await bot.getGroupMember(session.channelId, ch.id)
           let name = currentUser.nickname || currentUser.username
-          return name + t(`${pCommand}.is-locking`)
+          return name + t(`${command}.is-locking`)
         } else if (ch.lock && ch.uid == session.user.id) {
           if (options.skip) {
             ch.skipping = true
           } else {
-            return t(`${pCommand}.is-locking-self`)
+            return t(`${command}.is-locking-self`)
           }
         } else {
           ch.lock = true
@@ -94,7 +94,7 @@ module.exports.apply = (ctx, pluginOptions) => {
         let story = new Story(storyJson)
 
         if (options['hard-reset']) {
-          session.send(t(`${pCommand}.hard-reset-confirm`))
+          session.send(t(`${command}.hard-reset-confirm`))
           let ans = await session.prompt(5 * 1000)
           switch (ans) {
           case '是':
@@ -103,7 +103,7 @@ module.exports.apply = (ctx, pluginOptions) => {
             story.ResetState()
             db.saveGameData(session.user.id, story.state.toJson())
             ch.lock = false
-            return t(`${pCommand}.hard-reset-complete`)
+            return t(`${command}.hard-reset-complete`)
           default:
             ch.lock = false
             return
@@ -139,21 +139,21 @@ module.exports.apply = (ctx, pluginOptions) => {
 
         if (story.currentChoices.length > 0) {
           let choices = options.skip
-            ? t(`${pCommand}.skip-to-choices`)
-            : t(`${pCommand}.choices`)
+            ? t(`${command}.skip-to-choices`)
+            : t(`${command}.choices`)
           for (let i = 0; i < story.currentChoices.length; i++) {
             choices += `\n${(i + 1)}. ${story.currentChoices[i].text}`
           }
           await session.sendQueued(choices)
         } else {
-          await session.sendQueued(t(`${pCommand}.the-end`))
+          await session.sendQueued(t(`${command}.the-end`))
         }
 
         db.saveGameData(session.user.id, story.state.toJson())
         ch.lock = false
       } catch (err) {
         console.log(err)
-        return t(`${pCommand}.error`)
+        return t(`${command}.error`)
       }
     })
 }
