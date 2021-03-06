@@ -24,9 +24,11 @@
     "inkjs": "^1.11.0",
     "koishi-utils": "^4.0.1"
   },
+  "peerDependencies": {
+    "koishi-core": "^3.0.0"
+  },
   "devDependencies": {
     "koishi-adapter-onebot": "^3.0.0",
-    "koishi-core": "^3.0.0",
     "koishi-plugin-mysql": "^3.0.0-beta.16"
   }
 }
