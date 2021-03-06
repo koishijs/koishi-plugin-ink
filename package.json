@@ -1,6 +1,6 @@
 {
   "name": "koishi-plugin-ink",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "An inkjs application for Koishi.js",
   "main": "index.js",
   "scripts": {
@@ -22,10 +22,10 @@
   "homepage": "https://github.com/idlist/koishi-plugin-ink#readme",
   "dependencies": {
     "inkjs": "^1.11.0",
-    "koishi-utils": "^4.0.1"
+    "koishi-utils": "^4.0.0"
   },
   "peerDependencies": {
-    "koishi-core": "^3.0.0"
+    "koishi-core": ">=3"
   },
   "devDependencies": {
     "koishi-adapter-onebot": "^3.0.0",
