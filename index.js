@@ -1,18 +1,6 @@
 const { Story } = require('inkjs')
 const { t } = require('koishi-utils')
-require('./mysql')
-
-t.set('ink.description', 'ink功能')
-t.set('ink.example', '查看当前剧情 / 选项')
-t.set('ink.example-choice', '选择第一个选项')
-t.set('ink.hard-reset', '重置（请谨慎使用）')
-t.set('ink.is-locking', ' 正处于剧情中，请等待其剧情结束。')
-t.set('ink.hard-reset-confirm',
-  '这将重置你的所有进度与数据，且不可挽回。请于5秒内回复 是 或 y(es) 以确认。')
-t.set('ink.hard-reset-complete', '已重置。')
-t.set('ink.choices', '选项：')
-t.set('ink.the-end', '=== 故事结束 ===')
-t.set('ink.error', '出现了一点错误，请尝试重新开始剧情。')
+const extendMysql = require('./mysql')
 
 class PluginOptions {
   constructor(pOptions) {
@@ -36,19 +24,42 @@ const find = (arr, pred) => {
   return res
 }
 
+const templateNode = {
+  'description': 'ink功能',
+  'example': '查看当前剧情 / 选项',
+  'example-choice': '选择第一个选项',
+  'hard-reset': '重置（请谨慎使用）',
+  'skip': '跳至下一个选项',
+  'is-locking': ' 正处于剧情中，请等待其剧情结束。',
+  'is-locking-self': '当前处于剧情中，请等待剧情结束。',
+  'hard-reset-confirm': '这将重置你的所有进度与数据，且不可挽回。请于5秒内回复 是 或 y(es) 以确认。',
+  'hard-reset-complete': '已重置。',
+  'choices': '选项：',
+  'skip-to-choices': '已跳转至选项：',
+  'the-end': '=== 故事结束 ===',
+  'error': '出现了一点错误，请尝试重新开始剧情。'
+}
+
 let storyLock = []
 
 module.exports.name = 'ink'
 
 module.exports.apply = (ctx, pluginOptions) => {
   let pOptions = new PluginOptions(pluginOptions)
+  let pCommand = pOptions.command
+  extendMysql(pOptions.subcommand)
+
+  for (let node in templateNode) {
+    t.set(`${pCommand}.${node}`, templateNode[node])
+  }
 
   const storyJson = require(pOptions.filePath)
 
-  ctx.command(`${pOptions.command} <choice>`, t('ink.description'))
-    .example(`${pOptions.subcommand}  ${t('ink.example')}`)
-    .example(`${pOptions.subcommand} 1  ${t('ink.example-choice')}`)
-    .option('hard-reset', `-R ${t('ink.hard-reset')}`)
+  ctx.command(pCommand + ' <choice>', t(`${pCommand}.description`))
+    .example(pOptions.subcommand + '  ' + t(`${pCommand}.example`))
+    .example(pOptions.subcommand + '1  ' + t(`${pCommand}.example-choice`))
+    .option('hard-reset', '-R ' + t(`${pCommand}.hard-reset`))
+    .option('skip', '-s ' + t(`${pCommand}.skip`))
     .userFields(['id'])
     .action(async ({ session, options }, choice) => {
       try {
@@ -67,7 +78,13 @@ module.exports.apply = (ctx, pluginOptions) => {
         } else if (ch.lock && ch.uid != session.user.id) {
           let currentUser = await bot.getGroupMember(session.channelId, ch.id)
           let name = currentUser.nickname || currentUser.username
-          return name + t('is-locking')
+          return name + t(`${pCommand}.is-locking`)
+        } else if (ch.lock && ch.uid == session.user.id) {
+          if (options.skip) {
+            ch.skipping = true
+          } else {
+            return t(`${pCommand}.is-locking-self`)
+          }
         } else {
           ch.lock = true
           ch.id = session.userId
@@ -76,8 +93,8 @@ module.exports.apply = (ctx, pluginOptions) => {
 
         let story = new Story(storyJson)
 
-        if (options && options['hard-reset']) {
-          session.send(t('ink.hard-reset-confirm'))
+        if (options['hard-reset']) {
+          session.send(t(`${pCommand}.hard-reset-confirm`))
           let ans = await session.prompt(5 * 1000)
           switch (ans) {
           case '是':
@@ -86,7 +103,7 @@ module.exports.apply = (ctx, pluginOptions) => {
             story.ResetState()
             db.saveGameData(session.user.id, story.state.toJson())
             ch.lock = false
-            return t('ink.hard-reset-complete')
+            return t(`${pCommand}.hard-reset-complete`)
           default:
             ch.lock = false
             return
@@ -105,24 +122,38 @@ module.exports.apply = (ctx, pluginOptions) => {
         }
 
         while (story.canContinue) {
-          await session.sendQueued(story.Continue())
+          if (options.skip) story.Continue()
+          else {
+            session.send(story.Continue())
+            let skip = await session.prompt(session.app.options.delay.message)
+            switch (skip) {
+            case '-s':
+            case '--skip':
+            case 'skip':
+            case '跳过':
+              options.skip = true
+              break
+            }
+          }
         }
 
         if (story.currentChoices.length > 0) {
-          let choices = t('ink.choices')
+          let choices = options.skip
+            ? t(`${pCommand}.skip-to-choices`)
+            : t(`${pCommand}.choices`)
           for (let i = 0; i < story.currentChoices.length; i++) {
             choices += `\n${(i + 1)}. ${story.currentChoices[i].text}`
           }
           await session.sendQueued(choices)
         } else {
-          await session.sendQueued(t('ink.the-end'))
+          await session.sendQueued(t(`${pCommand}.the-end`))
         }
 
         db.saveGameData(session.user.id, story.state.toJson())
         ch.lock = false
       } catch (err) {
         console.log(err)
-        return t('ink.error')
+        return t(`${pCommand}.error`)
       }
     })
 }
