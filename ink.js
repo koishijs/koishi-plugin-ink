@@ -2,23 +2,6 @@ const { Story } = require('inkjs')
 const { t } = require('koishi-utils')
 const extendMysql = require('./mysql')
 
-class PluginOptions {
-  constructor(pOptions) {
-    this.command = 'ink'
-    this.filePath = './examples/intercept.ink.json'
-    this.subcommand = this.command
-
-    if (pOptions) {
-      if (pOptions.command) this.command = pOptions.command
-      if (pOptions.filePath) this.filePath = './../../' + pOptions.filePath
-      if (pOptions.messageSpeed) this.messageSpeed = pOptions.messageSpeed
-
-      let subcommand = pOptions.command.match(/\/([^/]+?)$/)
-      if (subcommand) this.subcommand = subcommand[1]
-    }
-  }
-}
-
 const find = (arr, pred) => {
   let res
   arr.forEach(item => pred(item) ? res = item : 0)
@@ -34,7 +17,8 @@ const templateNode = {
   'is-locking': ' 正处于剧情中，请等待其剧情结束。',
   'is-locking-self': '当前处于剧情中，请等待剧情结束。',
   'hard-reset-confirm': '这将重置你的所有进度与数据，且不可挽回。请于5秒内回复 是 或 y(es) 以确认。',
-  'hard-reset-complete': '已重置。',
+  'hard-reset-completed': '已重置。',
+  'hard-reset-failed': '已取消重置。',
   'choices': '选项：',
   'skip-to-choices': '已跳转至选项：',
   'the-end': '=== 故事结束 ===',
@@ -43,8 +27,7 @@ const templateNode = {
 
 let storyLock = []
 
-const inkInstance = (ctx, pluginOptions) => {
-  let pOptions = new PluginOptions(pluginOptions)
+module.exports = (ctx, pOptions) => {
   let command = pOptions.command
   extendMysql(pOptions.subcommand)
 
@@ -93,20 +76,18 @@ const inkInstance = (ctx, pluginOptions) => {
         let story = new Story(storyJson)
 
         if (options['hard-reset']) {
+          let replyMessage
           session.send(t(`${command}.hard-reset-confirm`))
           let ans = await session.prompt(5 * 1000)
-          switch (ans) {
-          case '是':
-          case 'yes':
-          case 'y':
+          if (['是', 'y', 'yes'].indexOf(ans) != -1) {
             story.ResetState()
             db.saveGameData(session.user.id, story.state.toJson())
-            ch.lock = false
-            return t(`${command}.hard-reset-complete`)
-          default:
-            ch.lock = false
-            return
+            replyMessage = t(`${command}.hard-reset-completed`)
+          } else {
+            replyMessage = t(`${command}.hard-reset-failed`)
           }
+          ch.lock = false
+          return replyMessage
         }
 
         let save = await db.loadGameData(session.user.id)
@@ -127,13 +108,8 @@ const inkInstance = (ctx, pluginOptions) => {
           else {
             session.send(story.Continue())
             let skip = await session.prompt(speed)
-            switch (skip) {
-            case '-s':
-            case '--skip':
-            case 'skip':
-            case '跳过':
+            if (['-s', '--skip', 'skip', '跳过'].indexOf(skip) != -1) {
               options.skip = true
-              break
             }
           }
         }
@@ -158,6 +134,3 @@ const inkInstance = (ctx, pluginOptions) => {
       }
     })
 }
-
-module.exports.inkInstance = inkInstance
-module.exports.PluginOptions = PluginOptions
