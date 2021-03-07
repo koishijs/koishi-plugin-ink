@@ -6,16 +6,16 @@ class PluginOptions {
   constructor(pOptions) {
     this.command = 'ink'
     this.filePath = './examples/intercept.ink.json'
+    this.subcommand = this.command
 
     if (pOptions) {
       if (pOptions.command) this.command = pOptions.command
       if (pOptions.filePath) this.filePath = './../../' + pOptions.filePath
       if (pOptions.messageSpeed) this.messageSpeed = pOptions.messageSpeed
-    }
 
-    let subcommand = pOptions.command.match(/\/([^/]+?)$/g)
-    if (subcommand) this.subcommand = subcommand[0]
-    else this.subcommand = pOptions.command
+      let subcommand = pOptions.command.match(/\/([^/]+?)$/)
+      if (subcommand) this.subcommand = subcommand[1]
+    }
   }
 }
 
@@ -43,7 +43,7 @@ const templateNode = {
 
 let storyLock = []
 
-module.exports = (ctx, pluginOptions) => {
+const inkInstance = (ctx, pluginOptions) => {
   let pOptions = new PluginOptions(pluginOptions)
   let command = pOptions.command
   extendMysql(pOptions.subcommand)
@@ -120,8 +120,7 @@ module.exports = (ctx, pluginOptions) => {
           story.ChooseChoiceIndex(userChoice)
         }
 
-        let speed = pOptions.messageSpeed
-        if (!speed) speed = session.app.options.delay.message
+        let speed = pOptions.messageSpeed ?? session.app.options.delay.message
 
         while (story.canContinue) {
           if (options.skip) story.Continue()
@@ -159,3 +158,6 @@ module.exports = (ctx, pluginOptions) => {
       }
     })
 }
+
+module.exports.inkInstance = inkInstance
+module.exports.PluginOptions = PluginOptions
