@@ -72,36 +72,76 @@ ink <choice>
 
 这个插件在无配置项的情况下将使用 *[The intercept](https://www.inklestudios.com/ink/theintercept/)* 作为示例小说。
 
+配置项的形式为：
+
+```js
+{
+  command:
+  filePath:
+  messageSpeed:
+  files: [
+    {
+      command:
+      filePath:
+      messageSpeed:
+    },
+    {
+      command:
+      filePath:
+      messageSpeed:
+    }
+    // if you have other ink files...
+  ]
+}
+```
+
 | 配置项           | 默认值  | 说明                                                         |
 | ---------------- | ------- | ------------------------------------------------------------ |
 | `command`        | `ink`       | 插件指令 **\*1**                             |
 | `filePath`     | *The intercept*   | 编译好的 `(.ink).json` 文件的相对路径 |
+| `messageSpeed` | `app.options.delay.message` **\*2** | 文字的显示速度（ms） |
 
-**\*1** 修改此配置项将将使上文中所有的 `ink` 替换为所配置的字符串。例如，配置 `command: 'sample'`  会导致指令变为 `sample` ，创建的表变为 `sample_save` ，注册的模板（后述）变为 `sample.description` 、 `sample.example` 等。
+<details>
+<summary> **\*1** </summary>
+
+修改此配置项将将使上文中所有的 `ink` 替换为所配置的字符串。例如，配置 `command: 'sample'`  会导致指令变为 `sample` ，创建的表变为 `sample_save` ，注册的模板（后述）变为 `sample.description` 、 `sample.example` 等。
 
 此配置项也支持设置为 Koishi 的链式子指令，但是请注意，由于使用了数据库，子指令的最后一项只能为层级式，且不能包含数据库表名不支持的字符。
 
 例如，配置 `command: 'lorem/ipsum'` 会创建表 `ipsum_save` ，这是没有问题的；但是配置 `command: 'lorem.ipsum'` 则会出现在 `lorem` 库内创建 `ipsum_save` 表的情况，这在大多数情况下是不被期望的。
+
+</details>
+
+<details>
+<summary> **\*2**  </summary> 
+
+这个值当在 `App` 中没有配置时的默认值为 100，即 0.1秒。
+
+</details>
+
+所有的 `command` 配置项请确保各不相同。
 
 ## 模板
 
 这个插件在最初的几行定义了一些字符串：
 
 ```js
-// Object templateNode
-'description': 'ink功能',
-'example': '查看当前剧情 / 选项',
-'example-choice': '选择第一个选项',
-'hard-reset': '重置（请谨慎使用）',
-'skip': '跳至下一个选项',
-'is-locking': ' 正处于剧情中，请等待其剧情结束。',
-'is-locking-self': '当前处于剧情中，请等待剧情结束。',
-'hard-reset-confirm': '这将重置你的所有进度与数据，且不可挽回。请于5秒内回复 是 或 y(es) 以确认。',
-'hard-reset-complete': '已重置。',
-'choices': '选项：',
-'skip-to-choices': '已跳转至选项：',
-'the-end': '=== 故事结束 ===',
-'error': '出现了一点错误，请尝试重新开始剧情。'
+const templateNode = {
+  'description': 'ink功能',
+  'example': '查看当前剧情 / 选项',
+  'example-choice': '选择第一个选项',
+  'hard-reset': '重置（请谨慎使用）',
+  'skip': '跳至下一个选项',
+  'is-locking': ' 正处于剧情中，请等待其剧情结束。',
+  'is-locking-self': '当前处于剧情中，请等待剧情结束。',
+  'hard-reset-confirm': '这将重置你的所有进度与数据，且不可挽回。请于5秒内回复 是 或 y(es) 以确认。',
+  'hard-reset-completed': '已重置。',
+  'hard-reset-failed': '已取消重置。',
+  'choices': '选项：',
+  'skip-to-choices': '已跳转至选项：',
+  'the-end': '=== 故事结束 ===',
+  'error': '出现了一点错误，请尝试重新开始剧情。'
+}
 ```
 
 并通过下面的方法注册为 [模板](https://koishi.js.org/api/utils.html#模板操作)  ：
