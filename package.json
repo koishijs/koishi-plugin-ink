@@ -3,8 +3,11 @@
   "version": "0.2.0",
   "description": "An inkjs application for Koishi.js",
   "main": "index.js",
+  "workspaces": [
+    "test"
+  ],
   "scripts": {
-    "test": "node test/index.js"
+    "test": "cd test ; node index.js"
   },
   "repository": {
     "type": "git",

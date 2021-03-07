@@ -1,4 +1,5 @@
 const inkInstance = require('./ink')
+const path = require('path')
 
 class PluginOptions {
   constructor(pOptions) {
@@ -8,7 +9,13 @@ class PluginOptions {
 
     if (pOptions) {
       if (pOptions.command) this.command = pOptions.command
-      if (pOptions.filePath) this.filePath = './../../' + pOptions.filePath
+      if (pOptions.filePath) {
+        if (path.basename(path.resolve('..')) == 'node_modules') {
+          this.filePath = path.resolve('../..', pOptions.filePath)
+        } else {
+          this.filePath = path.resolve(pOptions.filePath)
+        }
+      }
       if (pOptions.messageSpeed) this.messageSpeed = pOptions.messageSpeed
 
       let subcommand = this.command.match(/\/([^/]+?)$/)
