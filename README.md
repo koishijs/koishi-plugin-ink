@@ -97,29 +97,19 @@ ink <choice>
 
 | 配置项           | 默认值  | 说明                                                         |
 | ---------------- | ------- | ------------------------------------------------------------ |
-| `command`        | `ink`       | 插件指令 **\*1**                             |
+| `command` **\*1** | `ink`       | 插件指令 **\*2**                             |
 | `filePath`     | *The intercept*   | 编译好的 `(.ink).json` 文件的相对路径 |
-| `messageSpeed` | `app.options.delay.message` **\*2** | 文字的显示速度（ms） |
+| `messageSpeed` | `app.options.delay.message` **\*3** | 文字的显示速度（ms） |
 
-<details>
-<summary> **\*1** </summary>
+**\*1** 所有的 `command` 请确保各不相同。
 
-修改此配置项将将使上文中所有的 `ink` 替换为所配置的字符串。例如，配置 `command: 'sample'`  会导致指令变为 `sample` ，创建的表变为 `sample_save` ，注册的模板（后述）变为 `sample.description` 、 `sample.example` 等。
+**\*2** 修改此配置项将将使上文中所有的 `ink` 替换为所配置的字符串。例如，配置 `command: 'sample'`  会导致指令变为 `sample` ，创建的表变为 `sample_save` ，注册的模板（后述）变为 `sample.description` 、 `sample.example` 等。
 
 此配置项也支持设置为 Koishi 的链式子指令，但是请注意，由于使用了数据库，子指令的最后一项只能为层级式，且不能包含数据库表名不支持的字符。
 
 例如，配置 `command: 'lorem/ipsum'` 会创建表 `ipsum_save` ，这是没有问题的；但是配置 `command: 'lorem.ipsum'` 则会出现在 `lorem` 库内创建 `ipsum_save` 表的情况，这在大多数情况下是不被期望的。
 
-</details>
-
-<details>
-<summary> **\*2**  </summary> 
-
-这个值当在 `App` 中没有配置时的默认值为 100，即 0.1秒。
-
-</details>
-
-所有的 `command` 配置项请确保各不相同。
+**\*3** 这个值当在 `App` 中没有配置时的默认值为 100，即 0.1秒。
 
 ## 模板
 

@@ -13,6 +13,7 @@ class PluginOptions {
 
       let subcommand = this.command.match(/\/([^/]+?)$/)
       if (subcommand) this.subcommand = subcommand[1]
+      else this.subcommand = this.command
     }
   }
 }
@@ -46,6 +47,6 @@ module.exports.apply = (ctx, pluginOptions) => {
   const plugins = new Plugins(pluginOptions)
 
   plugins.list.forEach(pOptions => {
-    ctx.plugin(inkInstance, pOptions)
+    inkInstance(ctx, pOptions)
   })
 }
