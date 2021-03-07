@@ -10,6 +10,7 @@ class PluginOptions {
     if (pOptions) {
       if (pOptions.command) this.command = pOptions.command
       if (pOptions.filePath) this.filePath = './../../' + pOptions.filePath
+      if (pOptions.messageSpeed) this.messageSpeed = pOptions.messageSpeed
     }
 
     let subcommand = pOptions.command.match(/\/([^/]+?)$/g)
@@ -42,9 +43,7 @@ const templateNode = {
 
 let storyLock = []
 
-module.exports.name = 'ink'
-
-module.exports.apply = (ctx, pluginOptions) => {
+module.exports = (ctx, pluginOptions) => {
   let pOptions = new PluginOptions(pluginOptions)
   let command = pOptions.command
   extendMysql(pOptions.subcommand)
@@ -121,11 +120,14 @@ module.exports.apply = (ctx, pluginOptions) => {
           story.ChooseChoiceIndex(userChoice)
         }
 
+        let speed = pOptions.messageSpeed
+        if (!speed) speed = session.app.options.delay.message
+
         while (story.canContinue) {
           if (options.skip) story.Continue()
           else {
             session.send(story.Continue())
-            let skip = await session.prompt(session.app.options.delay.message)
+            let skip = await session.prompt(speed)
             switch (skip) {
             case '-s':
             case '--skip':
