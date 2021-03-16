@@ -12,13 +12,16 @@ const templateNode = {
   'description': 'ink功能',
   'example': '查看当前剧情 / 选项',
   'example-choice': '选择第一个选项',
-  'hard-reset': '重置（请谨慎使用）',
   'skip': '跳至下一个选项',
+  'hard-reset': '重置（请谨慎使用）',
+  'hard-unlock': '强制解除进程锁（需要 2 级权限，请谨慎使用）',
   'is-locking': ' 正处于剧情中，请等待其剧情结束。',
   'is-locking-self': '当前处于剧情中，请等待剧情结束。',
   'hard-reset-confirm': '这将重置你的所有进度与数据，且不可挽回。请于5秒内回复 是 或 y(es) 以确认。',
   'hard-reset-completed': '已重置。',
   'hard-reset-failed': '已取消重置。',
+  'hard-unlock-unavail': '未处于剧情中，不需要解除进程锁。',
+  'hard-unlock-completed': '已强制解除进程锁。',
   'choices': '选项：',
   'skip-to-choices': '已跳转至选项：',
   'the-end': '=== 故事结束 ===',
@@ -41,6 +44,7 @@ module.exports = (ctx, pOptions) => {
     .example(pOptions.subcommand + '  ' + t(`${command}.example`))
     .example(pOptions.subcommand + ' 1  ' + t(`${command}.example-choice`))
     .option('hard-reset', '-R ' + t(`${command}.hard-reset`))
+    .option('hard-unlock', '-U ' + t(`${command}.hard-unlock`), { authority: 2 })
     .option('skip', '-s ' + t(`${command}.skip`))
     .userFields(['id'])
     .action(async ({ session, options }, choice) => {
@@ -49,6 +53,14 @@ module.exports = (ctx, pOptions) => {
         let bot = session.bot
 
         let ch = find(storyLock, o => o.channel == session.channelId)
+        if (options['hard-unlock']) {
+          if (!ch || !ch.lock) {
+            return t(`${command}.hard-unlock-unavail`)
+          } else {
+            ch.lock = false
+            return t(`${command}.hard-unlock-completed`)
+          }
+        }
         if (!ch) {
           storyLock.push({
             channel: session.channelId,
@@ -62,11 +74,7 @@ module.exports = (ctx, pOptions) => {
           let name = currentUser.nickname || currentUser.username
           return name + t(`${command}.is-locking`)
         } else if (ch.lock && ch.uid == session.user.id) {
-          if (options.skip) {
-            ch.skipping = true
-          } else {
-            return t(`${command}.is-locking-self`)
-          }
+          return t(`${command}.is-locking-self`)
         } else {
           ch.lock = true
           ch.id = session.userId
@@ -126,8 +134,8 @@ module.exports = (ctx, pOptions) => {
           await session.sendQueued(t(`${command}.the-end`))
         }
 
-        db.saveGameData(session.user.id, story.state.toJson())
         ch.lock = false
+        db.saveGameData(session.user.id, story.state.toJson())
       } catch (err) {
         console.log(err)
         return t(`${command}.error`)

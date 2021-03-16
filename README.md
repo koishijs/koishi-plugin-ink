@@ -63,10 +63,11 @@ ink <choice>
 
 **choice**：在有选项的时候，选择此选项。
 
-| 可选选项           | 说明             |
-| ------------------ | ---------------- |
-| `-R, --hard-reset` | 重置所有进度     |
-| `-s, --skip`       | 跳转至下一个选项 |
+| 可选选项 | 说明 |
+| --- | --- |
+| `-R, --hard-reset` | 重置所有进度 |
+| `-U, --hard-unlock` | 强制解除进程所（需要2级权限） |
+| `-s, --skip` | 跳转至下一个选项 |
 
 ## 插件配置项
 
@@ -95,10 +96,10 @@ ink <choice>
 }
 ```
 
-| 配置项           | 默认值  | 说明                                                         |
-| ---------------- | ------- | ------------------------------------------------------------ |
-| `command` **\*1** | `ink`       | 插件指令 **\*2**                             |
-| `filePath`     | *The intercept*   | 编译好的 `(.ink).json` 文件的相对路径 |
+| 配置项 | 默认值 | 说明 |
+| --- | --- | --- |
+| `command` **\*1** | `ink` | 插件指令 **\*2** |
+| `filePath` | *The intercept* | 编译好的 `(.ink).json` 文件的相对路径 |
 | `messageSpeed` | `app.options.delay.message` **\*3** | 文字的显示速度（ms） |
 
 **\*1** 所有的 `command` 请确保各不相同。
@@ -120,13 +121,16 @@ const templateNode = {
   'description': 'ink功能',
   'example': '查看当前剧情 / 选项',
   'example-choice': '选择第一个选项',
-  'hard-reset': '重置（请谨慎使用）',
   'skip': '跳至下一个选项',
+  'hard-reset': '重置（请谨慎使用）',
+  'hard-unlock': '强制解除进程锁（需要 2 级权限，请谨慎使用）',
   'is-locking': ' 正处于剧情中，请等待其剧情结束。',
   'is-locking-self': '当前处于剧情中，请等待剧情结束。',
   'hard-reset-confirm': '这将重置你的所有进度与数据，且不可挽回。请于5秒内回复 是 或 y(es) 以确认。',
   'hard-reset-completed': '已重置。',
   'hard-reset-failed': '已取消重置。',
+  'hard-unlock-unavail': '未处于剧情中，不需要解除进程锁。',
+  'hard-unlock-completed': '已强制解除进程锁。',
   'choices': '选项：',
   'skip-to-choices': '已跳转至选项：',
   'the-end': '=== 故事结束 ===',
@@ -154,6 +158,12 @@ t.set('ink.error', '出了亿点点错误。')
 [Writing With Ink](https://github.com/inkle/ink/blob/master/Documentation/WritingWithInk.md) - ink 脚本的语法参考文档。
 
 [Running Your Ink](https://github.com/inkle/ink/blob/master/Documentation/RunningYourInk.md) - ink 运行时的参考文档。虽然里面使用的是 C# 实现，但是 inkjs 的大部分 API 都与之相同。
+
+## 已知问题
+
+- 有时候进程锁会由于未知原因锁死
+
+暂不清楚导致的原因，现阶段暂时以强制解除进程锁的选项替代。
 
 ## Q&A
 
