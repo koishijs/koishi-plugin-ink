@@ -1,6 +1,6 @@
 {
   "name": "koishi-plugin-ink",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "An inkjs application for Koishi.js",
   "main": "index.js",
   "workspaces": [
