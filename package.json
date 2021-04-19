@@ -1,6 +1,6 @@
 {
   "name": "koishi-plugin-ink",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "An inkjs application for Koishi.js",
   "main": "index.js",
   "workspaces": [
@@ -32,6 +32,6 @@
   },
   "devDependencies": {
     "koishi-adapter-onebot": "^3.0.0",
-    "koishi-plugin-mysql": "^3.0.0-beta.16"
+    "koishi-plugin-mysql": "^3.0.0"
   }
 }

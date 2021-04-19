@@ -114,7 +114,7 @@ ink <choice>
 
 ## 模板
 
-这个插件在最初的几行定义了一些字符串：
+这个插件在最初的几行定义了一些 [模板](https://koishi.js.org/api/utils.html#模板操作)：
 
 ```js
 const templateNode = {
@@ -135,15 +135,6 @@ const templateNode = {
   'skip-to-choices': '已跳转至选项：',
   'the-end': '=== 故事结束 ===',
   'error': '出现了一点错误，请尝试重新开始剧情。'
-}
-```
-
-并通过下面的方法注册为 [模板](https://koishi.js.org/api/utils.html#模板操作)  ：
-
-```js
-for (let node in templateNode) {
-  t.set(`${command}.${node}`, templateNode[node])
-  // command 即为配置项中的 command，默认为 ink
 }
 ```
 

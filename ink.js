@@ -2,13 +2,7 @@ const { Story } = require('inkjs')
 const { t } = require('koishi-utils')
 const extendMysql = require('./mysql')
 
-const find = (arr, pred) => {
-  let res
-  arr.forEach(item => pred(item) ? res = item : 0)
-  return res
-}
-
-const templateNode = {
+const Templates = {
   'description': 'ink功能',
   'example': '查看当前剧情 / 选项',
   'example-choice': '选择第一个选项',
@@ -28,21 +22,19 @@ const templateNode = {
   'error': '出现了一点错误，请尝试重新开始剧情。'
 }
 
-let storyLock = []
+let StoryLock = []
 
-module.exports = (ctx, pOptions) => {
-  let command = pOptions.command
-  extendMysql(pOptions.subcommand)
+module.exports = (ctx, config) => {
+  let command = config.command
+  extendMysql(config.subcommand)
 
-  for (let node in templateNode) {
-    t.set(`${command}.${node}`, templateNode[node])
-  }
+  t.set(command, Templates)
 
-  const storyJson = require(pOptions.filePath)
+  const storyJson = require(config.filePath)
 
   ctx.command(command + ' <choice>', t(`${command}.description`))
-    .example(pOptions.subcommand + '  ' + t(`${command}.example`))
-    .example(pOptions.subcommand + ' 1  ' + t(`${command}.example-choice`))
+    .example(config.subcommand + '  ' + t(`${command}.example`))
+    .example(config.subcommand + ' 1  ' + t(`${command}.example-choice`))
     .option('hard-reset', '-R ' + t(`${command}.hard-reset`))
     .option('hard-unlock', '-U ' + t(`${command}.hard-unlock`), { authority: 2 })
     .option('skip', '-s ' + t(`${command}.skip`))
@@ -52,7 +44,7 @@ module.exports = (ctx, pOptions) => {
         let db = session.database
         let bot = session.bot
 
-        let ch = find(storyLock, o => o.channel == session.channelId)
+        let ch = StoryLock.find(o => o.channel == session.channelId)
         if (options['hard-unlock']) {
           if (!ch || !ch.lock) {
             return t(`${command}.hard-unlock-unavail`)
@@ -62,13 +54,13 @@ module.exports = (ctx, pOptions) => {
           }
         }
         if (!ch) {
-          storyLock.push({
+          StoryLock.push({
             channel: session.channelId,
             lock: true,
             id: session.userId,
             uid: session.user.id
           })
-          ch = storyLock[storyLock.length - 1]
+          ch = StoryLock[StoryLock.length - 1]
         } else if (ch.lock && ch.uid != session.user.id) {
           let currentUser = await bot.getGroupMember(session.channelId, ch.id)
           let name = currentUser.nickname || currentUser.username
@@ -89,7 +81,7 @@ module.exports = (ctx, pOptions) => {
           let ans = await session.prompt(5 * 1000)
           if (['是', 'y', 'yes'].indexOf(ans) != -1) {
             story.ResetState()
-            db.saveGameData(session.user.id, story.state.toJson())
+            db.saveGameData(config.subcommand, session.user.id, story.state.toJson())
             replyMessage = t(`${command}.hard-reset-completed`)
           } else {
             replyMessage = t(`${command}.hard-reset-failed`)
@@ -98,7 +90,7 @@ module.exports = (ctx, pOptions) => {
           return replyMessage
         }
 
-        let save = await db.loadGameData(session.user.id)
+        let save = await db.loadGameData(config.subcommand, session.user.id)
         if (!save) story.ResetState()
         else story.state.LoadJson(save)
 
@@ -109,7 +101,7 @@ module.exports = (ctx, pOptions) => {
           story.ChooseChoiceIndex(userChoice)
         }
 
-        let speed = pOptions.messageSpeed ?? session.app.options.delay.message
+        let speed = config.messageSpeed ?? session.app.options.delay.message
 
         while (story.canContinue) {
           if (options.skip) story.Continue()
@@ -135,7 +127,7 @@ module.exports = (ctx, pOptions) => {
         }
 
         ch.lock = false
-        db.saveGameData(session.user.id, story.state.toJson())
+        db.saveGameData(config.subcommand, session.user.id, story.state.toJson())
       } catch (err) {
         console.log(err)
         return t(`${command}.error`)
