@@ -7,21 +7,14 @@ class Config {
     this.filePath = './examples/intercept.ink.json'
     this.subcommand = this.command
 
-    if (config) {
-      if (config.command) this.command = config.command
-      if (config.filePath) {
-        if (path.basename(path.resolve('..')) == 'node_modules') {
-          this.filePath = path.resolve('../..', config.filePath)
-        } else {
-          this.filePath = path.resolve(config.filePath)
-        }
-      }
-      if (config.messageSpeed) this.messageSpeed = config.messageSpeed
+    config = { ...config }
+    if (config.command) this.command = config.command
+    if (config.filePath) this.filePath = path.resolve(process.cwd(), config.filePath)
+    if (config.messageSpeed) this.messageSpeed = config.messageSpeed
 
-      let subcommand = this.command.match(/\/([^/]+?)$/)
-      if (subcommand) this.subcommand = subcommand[1]
-      else this.subcommand = this.command
-    }
+    let subcommand = this.command.match(/\/([^/]+?)$/)
+    if (subcommand) this.subcommand = subcommand[1]
+    else this.subcommand = this.command
   }
 }
 
