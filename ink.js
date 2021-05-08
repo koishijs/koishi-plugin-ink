@@ -1,5 +1,5 @@
 const { Story } = require('inkjs')
-const { t } = require('koishi-utils')
+const { t } = require('koishi-core')
 const extendMysql = require('./mysql')
 
 const Templates = {

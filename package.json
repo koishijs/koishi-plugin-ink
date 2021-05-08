@@ -7,7 +7,7 @@
     "test"
   ],
   "scripts": {
-    "test": "cd test ; node index.js"
+    "i": "npm i"
   },
   "repository": {
     "type": "git",
@@ -24,14 +24,9 @@
   },
   "homepage": "https://github.com/idlist/koishi-plugin-ink#readme",
   "dependencies": {
-    "inkjs": "^1.11.0",
-    "koishi-utils": "^4.0.0"
+    "inkjs": "1.11.0"
   },
   "peerDependencies": {
     "koishi-core": ">=3"
-  },
-  "devDependencies": {
-    "koishi-adapter-onebot": "^3.0.0",
-    "koishi-plugin-mysql": "^3.0.0"
   }
 }
