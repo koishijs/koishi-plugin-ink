@@ -35,23 +35,7 @@
 npm i koishi-plugin-ink
 ```
 
-然后，在 **koishi.config.js** 中：
-
-```js
-module.exports = {
-  plugins: [
-    // your other plugins...
-    'ink': {},
-  ],
-  // other configs...
-]
-```
-
-或者在 **index.js** 中：
-
-```js
-app.plugin(require('koishi-plugin-ink'))
-```
+然后参照 [安装插件](https://koishi.js.org/guide/context.html#%E5%AE%89%E8%A3%85%E6%8F%92%E4%BB%B6) 继续安装。
 
 在注册插件后，插件将自动在数据库中创建名为 **ink_save** 的表，存档将储存到此表中。
 
