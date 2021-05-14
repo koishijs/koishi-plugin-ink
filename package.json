@@ -1,11 +1,8 @@
 {
   "name": "koishi-plugin-ink",
   "version": "0.3.0",
-  "description": "An inkjs application for Koishi.js",
+  "description": "An inkjs application for Koishi.js.",
   "main": "index.js",
-  "workspaces": [
-    "test"
-  ],
   "scripts": {
     "i": "npm i"
   },
@@ -27,6 +24,7 @@
     "inkjs": "1.11.0"
   },
   "peerDependencies": {
-    "koishi-core": ">=3"
+    "koishi-core": ">=3",
+    "koishi-plugin-mysql": "^3.0.0"
   }
 }
